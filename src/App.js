@@ -3,11 +3,19 @@ import { useState } from "react";
 export default function App() {
   const [stuffs, setStuffs] = useState([]);
 
+  function handleAddStuffs(stuff) {
+    setStuffs((stuffs) => [...stuffs, stuff]);
+  }
+
+  function handleDeleteStuffs(id) {
+    setStuffs((stuffs) => stuffs.filter((stuff) => id !== stuff.id));
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form setStuffs={setStuffs} />
-      <PackingList stuffs={stuffs} />
+      <Form onAddStuffs={handleAddStuffs} />
+      <PackingList stuffs={stuffs} onDeleteStuffs={handleDeleteStuffs} />
       <Stats />
     </div>
   );
@@ -17,20 +25,16 @@ function Logo() {
   return <h1>Travel soon</h1>;
 }
 
-function Form({ setStuffs }) {
+function Form({ onAddStuffs }) {
   const [quantity, setQuantity] = useState(1);
   const [item, setItem] = useState("");
-
-  function handleStuffs(stuff) {
-    setStuffs((stuffs) => [...stuffs, stuff]);
-  }
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!item) return;
 
     const newItem = { item, quantity, packed: false, id: Date.now() };
-    handleStuffs(newItem);
+    onAddStuffs(newItem);
 
     setQuantity(1);
     setItem("");
@@ -58,25 +62,25 @@ function Form({ setStuffs }) {
   );
 }
 
-function PackingList({ stuffs }) {
+function PackingList({ stuffs, onDeleteStuffs }) {
   return (
     <div className="list">
       <ul>
         {stuffs.map((item) => (
-          <Item item={item} key={item.id} />
+          <Item item={item} key={item.id} onDeleteStuffs={onDeleteStuffs} />
         ))}
       </ul>
     </div>
   );
 }
 
-function Item({ item }) {
+function Item({ item, onDeleteStuffs }) {
   return (
     <li>
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.item}
       </span>
-      <button>❌</button>
+      <button onClick={() => onDeleteStuffs(item.id)}>❌</button>
     </li>
   );
 }
