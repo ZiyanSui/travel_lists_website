@@ -34,40 +34,38 @@ export default function App() {
 }
 
 function Logo() {
-  return <h1>Travel soon</h1>;
+  return <h1>Travel soon 🤤</h1>;
 }
 
 function Form({ onAddStuffs }) {
   const [quantity, setQuantity] = useState(1);
-  const [item, setItem] = useState("");
+  const [name, setName] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!item) return;
+    if (!name) return;
 
-    const newItem = { item, quantity, packed: false, id: Date.now() };
-    onAddStuffs(newItem);
+    const newstuff = { name, quantity, packed: false, id: Date.now() };
+    console.log(newstuff);
+    onAddStuffs(newstuff);
 
     setQuantity(1);
-    setItem("");
+    setName("");
   }
 
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <h3>What do you need to pack for the trip?</h3>
-      <select
-        value={quantity}
-        onChange={(e) => Number(setQuantity(e.target.value))}
-      >
+      <select value={quantity} onChange={(e) => setQuantity(e.target.value)}>
         {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
           <option>{num}</option>
         ))}
       </select>
       <input
         type="text"
-        placeholder="Item..."
-        value={item}
-        onChange={(e) => setItem(e.target.value)}
+        placeholder="stuff..."
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
       <button>Add</button>
     </form>
@@ -75,34 +73,60 @@ function Form({ onAddStuffs }) {
 }
 
 function PackingList({ stuffs, onDeleteStuffs, onTogglePacked }) {
+  const [sortBy, setSortBy] = useState("name");
+
+  let sortedStuffs;
+
+  if (sortBy === "name") {
+    sortedStuffs = stuffs.slice().sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortBy === "quantity") {
+    sortedStuffs = stuffs.slice().sort((a, b) => a.quantity - b.quantity);
+  }
+
+  if (sortBy === "packed") {
+    sortedStuffs = stuffs
+      .slice()
+      .sort((a, b) => Number(a.packed) - Number(b.packed));
+  }
+
   return (
     <div className="list">
       <ul>
-        {stuffs.map((item) => (
-          <Item
-            item={item}
-            key={item.id}
+        {sortedStuffs.map((stuff) => (
+          <Stuff
+            stuff={stuff}
+            key={stuff.id}
             onDeleteStuffs={onDeleteStuffs}
             onTogglePacked={onTogglePacked}
           />
         ))}
       </ul>
+
+      <div className="actions">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="name">Sort by name</option>
+          <option value="quantity">Sort by quantity</option>
+          <option value="packed">Sort by packed</option>
+        </select>
+      </div>
     </div>
   );
 }
 
-function Item({ item, onDeleteStuffs, onTogglePacked }) {
+function Stuff({ stuff, onDeleteStuffs, onTogglePacked }) {
   return (
     <li>
       <input
         type="checkbox"
-        value={item.packed}
-        onChange={() => onTogglePacked(item.id)}
+        value={stuff.packed}
+        onChange={() => onTogglePacked(stuff.id)}
       />
-      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-        {item.quantity} {item.item}
+      <span style={stuff.packed ? { textDecoration: "line-through" } : {}}>
+        {stuff.quantity} {stuff.name}
       </span>
-      <button onClick={() => onDeleteStuffs(item.id)}>❌</button>
+      <button onClick={() => onDeleteStuffs(stuff.id)}>❌</button>
     </li>
   );
 }
@@ -111,7 +135,7 @@ function Stats({ stuffs }) {
   if (!stuffs.length) {
     return (
       <p className="stats">
-        <em>Start Adding items to the packing list!</em>
+        <em>Start Adding stuffs to the packing list!</em>
       </p>
     );
   }
@@ -124,7 +148,7 @@ function Stats({ stuffs }) {
       <em>
         {percent === 100
           ? `You got everything! Ready to go 🥳`
-          : `You have ${num} items on the list and you already packed ${numPacked} (
+          : `You have ${num} names on the list and you already packed ${numPacked} (
         ${percent}%)itmes`}
       </em>
     </footer>
